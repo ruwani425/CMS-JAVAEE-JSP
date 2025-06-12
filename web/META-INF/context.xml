@@ -1,3 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context path="/">
+    <Resource
+            name="jdbc/pool"
+            type="javax.sql.DataSource"
+            driverClassName="com.mysql.cj.jdbc.Driver"
+            url="jdbc:mysql://localhost:3306/complaint_management"
+            username="root"
+            password="Ijse@1234"
+            inirialSize="5"
+            maxtotal="5"
+    >
+    </Resource>
 </Context>

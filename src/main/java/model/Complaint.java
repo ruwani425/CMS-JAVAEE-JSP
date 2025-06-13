@@ -1,0 +1,40 @@
+package model;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.sql.Timestamp;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Complaint {
+    private int id;
+    private String title;
+    private String description;
+    private String category;
+    private String status;
+    private String priority;
+    private int submittedBy;
+    private Integer assignedTo;
+    private String adminRemarks;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+
+    // Additional fields for display
+    private String submitterName;
+    private String assigneeName;
+
+    public Complaint(String title, String description, String category, int submittedBy) {
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.submittedBy = submittedBy;
+        this.status = "PENDING";
+        this.priority = "MEDIUM";
+    }
+}
+

@@ -1,63 +1,55 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="model.Customer" %>
-<%@ page import="java.util.List" %>
-
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Customer List</title>
-  <style>
-    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    .btn {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      text-decoration: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background-color: #45a049;
-    }
-  </style>
+  <title>Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
-<h1>Customer List</h1>
+<div class="container">
+  <div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <h4 class="text-center mb-4">Login</h4>
 
-<%
-  List<Customer> customers = (List<Customer>) request.getAttribute("customers");
-  if (customers != null && !customers.isEmpty()) {
-%>
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Email</th>
-  </tr>
-  <%
-    for (Customer customer : customers) {
-  %>
-  <tr>
-    <td><%= customer.getName() %></td>
-    <td><%= customer.getEmail() %></td>
-  </tr>
-  <%
-    }
-  %>
-</table>
-<%
-} else {
-%>
-<p>No customers found.</p>
-<%
-  }
-%>
+          <% if (session.getAttribute("message") != null) { %>
+          <div class="alert alert-success">
+            <%= session.getAttribute("message") %>
+            <% session.removeAttribute("message"); %>
+          </div>
+          <% } %>
 
-<!-- Button to go to dashboard.jsp -->
-<%--data retrive karagnna ona tana,customersla tika ganna widiya--%>
-<a href="<%= request.getContextPath() %>/customers" class="btn">Go to Dashboard</a>
+          <% if (session.getAttribute("error") != null) { %>
+          <div class="alert alert-danger">
+            <%= session.getAttribute("error") %>
+            <% session.removeAttribute("error"); %>
+          </div>
+          <% } %>
+
+          <form action="${pageContext.request.contextPath}/authServlet" method="post">
+            <input type="hidden" name="action" value="login" />
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control" name="username" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" name="password" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+          </form>
+
+          <div class="text-center mt-3">
+            <p>Don't have an account? <a href="${pageContext.request.contextPath}/pages/signup.jsp">Sign up</a></p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

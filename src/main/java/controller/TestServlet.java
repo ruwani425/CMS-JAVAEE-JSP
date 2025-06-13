@@ -12,6 +12,7 @@ import java.util.List;
 // Change mapping to /index.jsp or /customers
 @WebServlet("/customers")
 public class TestServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<Customer> customers = new ArrayList<>();

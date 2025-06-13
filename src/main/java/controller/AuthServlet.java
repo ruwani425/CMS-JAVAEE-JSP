@@ -1,5 +1,6 @@
 package controller;
 
+import dto.User;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -7,17 +8,15 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import model.UserModel;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @WebServlet("/authServlet")
 public class AuthServlet extends HttpServlet {
 
+    UserModel userModel;
     @Resource(name = "java:comp/env/jdbc/pool")
     private DataSource ds;
 
@@ -25,6 +24,7 @@ public class AuthServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = request.getParameter("action");
+        userModel = new UserModel(ds);
 
         if ("signup".equalsIgnoreCase(action)) {
             handleSignup(request, response);
@@ -35,86 +35,47 @@ public class AuthServlet extends HttpServlet {
         }
     }
 
-    private void handleSignup(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    private void handleSignup(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String fullName = request.getParameter("full_name");
-        String email = request.getParameter("email");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        String fullname = request.getParameter("full_name");
+        String email = request.getParameter("email");
         String role = request.getParameter("role");
 
-        try (
-                Connection conn = ds.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO users (username, password, full_name, email, role) VALUES (?, ?, ?, ?, ?)")
-        ) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setString(3, fullName);
-            stmt.setString(4, email);
-            stmt.setString(5, role);
+        User user = new User(username, password, fullname, email, role);
 
-            int rowsAffected = stmt.executeUpdate();
-
-            if (rowsAffected > 0) {
-                request.getSession().setAttribute("message", "Registration successful! Please login.");
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
-            } else {
-                request.getSession().setAttribute("error", "Registration failed.");
-                response.sendRedirect(request.getContextPath() + "/pages/signup.jsp");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            if (e.getErrorCode() == 1062) {
-                request.getSession().setAttribute("error", "Username already exists.");
-            } else {
-                request.getSession().setAttribute("error", "Database error: " + e.getMessage());
-            }
+        boolean register = userModel.register(user);
+        if (register) {
+            request.getSession().setAttribute("message", "Registration successful! Please login.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+        } else {
+            request.getSession().setAttribute("error", "Registration failed.");
             response.sendRedirect(request.getContextPath() + "/pages/signup.jsp");
         }
     }
 
-    private void handleLogin(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        try (
-                Connection conn = ds.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT * FROM users WHERE username = ? AND password = ?")
-        ) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
+        User user = userModel.login(username, password);
+        if (user != null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("user", user);
+            session.setAttribute("role", user.getRole());
+            String role = user.getRole();
 
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                HttpSession session = request.getSession();
-
-                // Store simple values
-                session.setAttribute("username", rs.getString("username"));
-                session.setAttribute("role", rs.getString("role"));
-
-                String role = rs.getString("role");
-                if ("ADMIN".equalsIgnoreCase(role)) {
-                    response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/employee/dashboard");
-                }
-
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             } else {
-                request.getSession().setAttribute("error", "Invalid username or password");
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
+                response.sendRedirect(request.getContextPath() + "/employee/dashboard");
             }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            request.getSession().setAttribute("error", "Database error: " + e.getMessage());
+        } else {
+            request.getSession().setAttribute("error", "Invalid username or password");
             response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
+
     }
 }

@@ -20,8 +20,7 @@ public class AuthServlet extends HttpServlet {
     @Resource(name = "java:comp/env/jdbc/pool")
     private DataSource ds;
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String action = request.getParameter("action");
         userModel = new UserModel(ds);
@@ -68,9 +67,9 @@ public class AuthServlet extends HttpServlet {
             String role = user.getRole();
 
             if ("ADMIN".equalsIgnoreCase(role)) {
-                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+                response.sendRedirect(request.getContextPath() + "/pages/admindashboard.jsp");
             } else {
-                response.sendRedirect(request.getContextPath() + "/employee/dashboard");
+                response.sendRedirect(request.getContextPath() + "/pages/employeedashboard.jsp");
             }
         } else {
             request.getSession().setAttribute("error", "Invalid username or password");

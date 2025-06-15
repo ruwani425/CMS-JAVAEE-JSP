@@ -41,6 +41,7 @@ public class UserModel {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return new User(
+                        resultSet.getInt("id"),
                         resultSet.getString("username"),
                         resultSet.getString("password"),
                         resultSet.getString("full_name"),

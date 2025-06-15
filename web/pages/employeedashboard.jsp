@@ -172,13 +172,13 @@
                                         <i class="bi bi-pencil-fill"></i>
                                     </button>
                                 </form>
-                                <form action="delete-complaint" method="post" style="display:inline;"
-                                      onsubmit="return confirm('Are you sure you want to delete this complaint?');">
-                                    <input type="hidden" name="id" value="<%= complaintId %>">
-                                    <button type="submit" class="btn btn-sm btn-danger action-btn" title="Delete">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                </form>
+<%--                                <form action="delete-complaint" method="post" style="display:inline;"--%>
+<%--                                      onsubmit="return confirm('Are you sure you want to delete this complaint?');">--%>
+<%--                                    <input type="hidden" name="id" value="<%= complaintId %>">--%>
+<%--                                    <button type="submit" class="btn btn-sm btn-danger action-btn" title="Delete">--%>
+<%--                                        <i class="bi bi-trash-fill"></i>--%>
+<%--                                    </button>--%>
+<%--                                </form>--%>
                                 <% } %>
                             </div>
                         </td>
@@ -203,7 +203,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="submit-complaint" method="post" id="complaintForm">
+                <form action="${pageContext.request.contextPath}/submit-complaint" method="post" id="complaintForm">
                     <div class="mb-3">
                         <label for="complaintTitle" class="form-label">Complaint Title</label>
                         <div class="input-group">

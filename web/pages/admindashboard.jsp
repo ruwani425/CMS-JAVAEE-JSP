@@ -1,4 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.util.List" %>
+<%@ page import="dto.Complaint" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +14,6 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/admindashboard.css">
 </head>
 <body>
-<!-- Top Navigation -->
 <nav class="navbar navbar-expand-lg top-navbar">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -41,26 +44,23 @@
     </div>
 </nav>
 
-<!-- Main Content -->
 <div class="container-fluid main-content">
-    <!-- Page Header -->
     <div class="page-header">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
             <h1 class="h2"><i class="bi bi-grid-1x2 me-2"></i>Admin Dashboard</h1>
             <div class="text-muted">
-                <i class="bi bi-calendar3"></i> <%= new java.text.SimpleDateFormat("MMMM dd, yyyy").format(new java.util.Date()) %>
+                <i class="bi bi-calendar3"></i> <%= new SimpleDateFormat("MMMM dd, yyyy").format(new java.util.Date()) %>
             </div>
         </div>
     </div>
 
-    <!-- Summary Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card text-white bg-primary-gradient">
                 <div class="card-body summary-card">
                     <i class="bi bi-clipboard-data dashboard-icon"></i>
                     <h5 class="card-title">Total Complaints</h5>
-                    <h2 class="card-text">125</h2>
+                    <h2 class="card-text">${totalComplaints != null ? totalComplaints : 0}</h2>
                 </div>
             </div>
         </div>
@@ -69,7 +69,7 @@
                 <div class="card-body summary-card">
                     <i class="bi bi-hourglass-split dashboard-icon"></i>
                     <h5 class="card-title">Pending</h5>
-                    <h2 class="card-text">42</h2>
+                    <h2 class="card-text">${pendingComplaints != null ? pendingComplaints : 0}</h2>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
                 <div class="card-body summary-card">
                     <i class="bi bi-check-circle dashboard-icon"></i>
                     <h5 class="card-title">Resolved</h5>
-                    <h2 class="card-text">78</h2>
+                    <h2 class="card-text">${resolvedComplaints != null ? resolvedComplaints : 0}</h2>
                 </div>
             </div>
         </div>
@@ -87,13 +87,12 @@
                 <div class="card-body summary-card">
                     <i class="bi bi-x-circle dashboard-icon"></i>
                     <h5 class="card-title">Rejected</h5>
-                    <h2 class="card-text">5</h2>
+                    <h2 class="card-text">${rejectedComplaints != null ? rejectedComplaints : 0}</h2>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filter Options -->
     <div class="card mb-4">
         <div class="card-header">
             <i class="bi bi-funnel me-2"></i>Filter Complaints
@@ -104,10 +103,10 @@
                     <label for="statusFilter" class="form-label">Filter by Status</label>
                     <select class="form-select" id="statusFilter" name="status">
                         <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                        <option value="rejected">Rejected</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="RESOLVED">Resolved</option>
+                        <option value="REJECTED">Rejected</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -131,14 +130,17 @@
         </div>
     </div>
 
-    <!-- Complaints Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
                 <i class="bi bi-table me-2"></i>All Complaints
             </div>
             <div>
-                <span class="badge bg-secondary">Showing 10 of 125</span>
+                <%
+                    List<Complaint> complaints = (List<Complaint>) request.getAttribute("complaints");
+                    int complaintCount = complaints != null ? complaints.size() : 0;
+                %>
+                <span class="badge bg-secondary">Showing <%= complaintCount %> complaints</span>
             </div>
         </div>
         <div class="card-body p-0">
@@ -148,7 +150,9 @@
                     <tr>
                         <th>ID</th>
                         <th>Title</th>
+                        <th>Category</th>
                         <th>Employee</th>
+                        <th>Priority</th>
                         <th>Date</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -156,61 +160,80 @@
                     </thead>
                     <tbody>
                     <%
-                        for (int i = 1; i <= 10; i++) {
-                            String complaintId = "CMP-" + (1000 + i);
-                            String date = "2025-06-" + (i + 10);
-                            int statusCode = i % 4;
-                            String statusClass = "";
-                            String statusIcon = "";
-                            String statusText = "";
+                        if (complaints != null && !complaints.isEmpty()) {
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                            for (Complaint complaint : complaints) {
+                                String statusClass = "";
+                                String statusIcon = "";
+                                String priorityClass = "";
 
-                            if (statusCode == 0) {
-                                statusClass = "bg-success";
-                                statusIcon = "bi-check-circle-fill";
-                                statusText = "Resolved";
-                            } else if (statusCode == 1) {
-                                statusClass = "bg-warning";
-                                statusIcon = "bi-hourglass";
-                                statusText = "Pending";
-                            } else if (statusCode == 2) {
-                                statusClass = "bg-info";
-                                statusIcon = "bi-arrow-repeat";
-                                statusText = "In Progress";
-                            } else {
-                                statusClass = "bg-danger";
-                                statusIcon = "bi-x-circle-fill";
-                                statusText = "Rejected";
-                            }
+                                switch (complaint.getStatus()) {
+                                    case "RESOLVED":
+                                        statusClass = "bg-success";
+                                        statusIcon = "bi-check-circle-fill";
+                                        break;
+                                    case "PENDING":
+                                        statusClass = "bg-warning";
+                                        statusIcon = "bi-hourglass";
+                                        break;
+                                    case "IN_PROGRESS":
+                                        statusClass = "bg-info";
+                                        statusIcon = "bi-arrow-repeat";
+                                        break;
+                                    case "REJECTED":
+                                        statusClass = "bg-danger";
+                                        statusIcon = "bi-x-circle-fill";
+                                        break;
+                                    default:
+                                        statusClass = "bg-secondary";
+                                        statusIcon = "bi-question-circle";
+                                }
+
+                                switch (complaint.getPriority()) {
+                                    case "HIGH":
+                                        priorityClass = "text-danger";
+                                        break;
+                                    case "MEDIUM":
+                                        priorityClass = "text-warning";
+                                        break;
+                                    case "LOW":
+                                        priorityClass = "text-success";
+                                        break;
+                                }
                     %>
                     <tr>
-                        <td><strong><%= complaintId %>
-                        </strong></td>
-                        <td>Network connectivity issue in department</td>
-                        <td>John Doe</td>
-                        <td><%= date %>
+                        <td><strong>CMP-<%= complaint.getId() %></strong></td>
+                        <td>
+                            <div class="complaint-title" title="<%= complaint.getDescription() != null ? complaint.getDescription() : complaint.getTitle() %>">
+                                <%= complaint.getTitle() %>
+                            </div>
                         </td>
+                        <td><span class="badge bg-light text-dark"><%= complaint.getCategory() %></span></td>
+                        <td><%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %></td>
+                        <td><span class="<%= priorityClass %>"><strong><%= complaint.getPriority() %></strong></span></td>
+                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %></td>
                         <td>
                             <span class="badge <%= statusClass %> status-badge">
-                                <i class="bi <%= statusIcon %>"></i> <%= statusText %>
+                                <i class="bi <%= statusIcon %>"></i> <%= complaint.getStatus().replace("_", " ") %>
                             </span>
                         </td>
                         <td>
                             <div class="btn-group">
                                 <form action="view-complaint" method="get" style="display:inline;">
-                                    <input type="hidden" name="id" value="<%= complaintId %>">
+                                    <input type="hidden" name="id" value="<%= complaint.getId() %>">
                                     <button type="submit" class="btn btn-sm btn-info action-btn" title="View">
                                         <i class="bi bi-eye-fill"></i>
                                     </button>
                                 </form>
-                                <form action="update-status" method="get" style="display:inline;">
-                                    <input type="hidden" name="id" value="<%= complaintId %>">
-                                    <button type="submit" class="btn btn-sm btn-primary action-btn" title="Edit">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </button>
-                                </form>
-                                <form action="delete-complaint" method="post" style="display:inline;"
+<%--                                <form action="update-status" method="get" style="display:inline;">--%>
+<%--                                    <input type="hidden" name="id" value="<%= complaint.getId() %>">--%>
+<%--                                    <button type="submit" class="btn btn-sm btn-primary action-btn" title="Edit">--%>
+<%--                                        <i class="bi bi-pencil-fill"></i>--%>
+<%--                                    </button>--%>
+<%--                                </form>--%>
+                                <form action="admin-delete" method="post" style="display:inline;"
                                       onsubmit="return confirm('Are you sure you want to delete this complaint?');">
-                                    <input type="hidden" name="id" value="<%= complaintId %>">
+                                    <input type="hidden" name="id" value="<%= complaint.getId() %>">
                                     <button type="submit" class="btn btn-sm btn-danger action-btn" title="Delete">
                                         <i class="bi bi-trash-fill"></i>
                                     </button>
@@ -218,7 +241,21 @@
                             </div>
                         </td>
                     </tr>
-                    <% } %>
+                    <%
+                        }
+                    } else {
+                    %>
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox display-4"></i>
+                                <p class="mt-2">No complaints found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <%
+                        }
+                    %>
                     </tbody>
                 </table>
             </div>
@@ -244,7 +281,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

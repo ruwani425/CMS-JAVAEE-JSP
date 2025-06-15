@@ -61,14 +61,17 @@ public class AuthServlet extends HttpServlet {
 
         User user = userModel.login(username, password);
         if (user != null) {
-            HttpSession session = request.getSession();
-            session.setAttribute("user", user);
-            session.setAttribute("role", user.getRole());
             String role = user.getRole();
-
             if ("ADMIN".equalsIgnoreCase(role)) {
-                response.sendRedirect(request.getContextPath() + "/pages/admindashboard.jsp");
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user);
+                session.setAttribute("role", user.getRole());
+                response.sendRedirect(request.getContextPath() + "/admin-dashboard");
             } else {
+                HttpSession session = request.getSession();
+                session.setAttribute("employeeId", user.getId());
+                System.out.println(user.getId());
+                session.setAttribute("employeeName", user.getUsername());
                 response.sendRedirect(request.getContextPath() + "/pages/employeedashboard.jsp");
             }
         } else {

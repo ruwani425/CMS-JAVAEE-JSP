@@ -7,6 +7,7 @@
         <element id="directory" name="classes">
           <element id="module-output" name="CMS" />
           <element id="library" level="application" name="bootstrap" />
+          <element id="library" level="application" name="bootstrap-icons" />
         </element>
         <element id="directory" name="lib">
           <element id="library" level="project" name="Maven: com.google.protobuf:protobuf-java:4.29.0" />

@@ -2,13 +2,14 @@
 <Context path="/">
     <Resource
             name="jdbc/pool"
+            auth="Container"
             type="javax.sql.DataSource"
             driverClassName="com.mysql.cj.jdbc.Driver"
             url="jdbc:mysql://localhost:3306/complaint_management"
             username="root"
             password="Ijse@1234"
-            inirialSize="5"
-            maxtotal="5"
-    >
-    </Resource>
+            initialSize="5"
+            maxTotal="5"
+            factory="org.apache.commons.dbcp2.BasicDataSourceFactory"
+    />
 </Context>

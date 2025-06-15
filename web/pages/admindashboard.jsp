@@ -284,12 +284,23 @@
                         </td>
                         <td>
                             <div class="btn-group">
+                                <!-- View Button -->
                                 <form action="view-complaint" method="get" style="display:inline;">
                                     <input type="hidden" name="id" value="<%= complaint.getId() %>">
                                     <button type="submit" class="btn btn-sm btn-info action-btn" title="View">
                                         <i class="bi bi-eye-fill"></i>
                                     </button>
                                 </form>
+
+                                <!-- Add Remarks Button -->
+                                <button type="button" class="btn btn-sm btn-warning action-btn"
+                                        title="Add Remarks"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#remarksModal<%= complaint.getId() %>">
+                                    <i class="bi bi-chat-left-text-fill"></i>
+                                </button>
+
+                                <!-- Delete Button -->
                                 <form action="admin-delete" method="post" style="display:inline;"
                                       onsubmit="return confirm('Are you sure you want to delete this complaint?');">
                                     <input type="hidden" name="id" value="<%= complaint.getId() %>">
@@ -340,6 +351,161 @@
         </div>
     </div>
 </div>
+
+<!-- Add Remarks Modals - One for each complaint -->
+<%
+    if (complaints != null && !complaints.isEmpty()) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        for (Complaint complaint : complaints) {
+%>
+<div class="modal fade" id="remarksModal<%= complaint.getId() %>" tabindex="-1"
+     aria-labelledby="remarksModalLabel<%= complaint.getId() %>" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="remarksModalLabel<%= complaint.getId() %>">
+                    <i class="bi bi-chat-left-text-fill me-2"></i>Add Remarks - CMP-<%= complaint.getId() %>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Complaint Details Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Complaint Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Complaint ID:</strong> CMP-<%= complaint.getId() %>
+                                </p>
+                                <p><strong>Title:</strong> <%= complaint.getTitle() %>
+                                </p>
+                                <p><strong>Category:</strong> <span
+                                        class="badge bg-secondary"><%= complaint.getCategory() %></span></p>
+                                <p>
+                                    <strong>Employee:</strong> <%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Priority:</strong>
+                                    <span class="<%= complaint.getPriority().equals("HIGH") ? "text-danger" : complaint.getPriority().equals("MEDIUM") ? "text-warning" : "text-success" %>">
+                                        <strong><%= complaint.getPriority() %></strong>
+                                    </span>
+                                </p>
+                                <p><strong>Created
+                                    Date:</strong> <%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %>
+                                </p>
+                                <p><strong>Current Status:</strong>
+                                    <span class="badge status-<%= complaint.getStatus() %>">
+                                        <%= complaint.getStatus().replace("_", " ") %>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p><strong>Description:</strong></p>
+                                <div class="border p-3 bg-light rounded">
+                                    <%= complaint.getDescription() != null ? complaint.getDescription() : "No description provided" %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Remarks Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Add Administrative Remarks</h6>
+                    </div>
+                    <div class="card-body">
+                        <form action="${pageContext.request.contextPath}/add-remarks" method="post"
+                              id="remarksForm<%= complaint.getId() %>">
+                            <input type="hidden" name="complaintId" value="<%= complaint.getId() %>">
+
+                            <div class="mb-3">
+                                <label for="remarksType<%= complaint.getId() %>" class="form-label">Remarks
+                                    Type:</label>
+                                <select class="form-select" id="remarksType<%= complaint.getId() %>" name="remarksType"
+                                        required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="INVESTIGATION">Investigation Notes</option>
+                                    <option value="RESOLUTION">Resolution Details</option>
+                                    <option value="FOLLOW_UP">Follow-up Required</option>
+                                    <option value="ESCALATION">Escalation Notes</option>
+                                    <option value="CLOSURE">Closure Remarks</option>
+                                    <option value="GENERAL">General Comments</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="remarks<%= complaint.getId() %>" class="form-label">Remarks:</label>
+                                <textarea class="form-control" id="remarks<%= complaint.getId() %>" name="remarks"
+                                          rows="5"
+                                          placeholder="Enter your administrative remarks here..." required></textarea>
+                                <div class="form-text">These remarks will be visible to administrators and can be used
+                                    for tracking complaint progress.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="priority<%= complaint.getId() %>" class="form-label">Priority Level:</label>
+                                <select class="form-select" id="priority<%= complaint.getId() %>" name="priority">
+                                    <option value="LOW">Low Priority</option>
+                                    <option value="MEDIUM" selected>Medium Priority</option>
+                                    <option value="HIGH">High Priority</option>
+                                    <option value="URGENT">Urgent</option>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="notifyEmployee<%= complaint.getId() %>" name="notifyEmployee"
+                                                   value="true">
+                                            <label class="form-check-label"
+                                                   for="notifyEmployee<%= complaint.getId() %>">
+                                                Notify Employee
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="requireFollowUp<%= complaint.getId() %>" name="requireFollowUp"
+                                                   value="true">
+                                            <label class="form-check-label"
+                                                   for="requireFollowUp<%= complaint.getId() %>">
+                                                Require Follow-up
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <button type="submit" form="remarksForm<%= complaint.getId() %>" class="btn btn-warning">
+                    <i class="bi bi-check-circle"></i> Add Remarks
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<%
+        }
+    }
+%>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -185,9 +185,11 @@
                                 }
                     %>
                     <tr>
-                        <td><strong>CMP-<%= complaint.getId() %></strong></td>
+                        <td><strong>CMP-<%= complaint.getId() %>
+                        </strong></td>
                         <td>
-                            <div class="complaint-title" title="<%= complaint.getDescription() != null ? complaint.getDescription() : complaint.getTitle() %>">
+                            <div class="complaint-title"
+                                 title="<%= complaint.getDescription() != null ? complaint.getDescription() : complaint.getTitle() %>">
                                 <%= complaint.getTitle() %>
                             </div>
                         </td>
@@ -197,7 +199,8 @@
                         <td>
                             <span class="<%= priorityClass %>"><strong><%= complaint.getPriority() %></strong></span>
                         </td>
-                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %></td>
+                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %>
+                        </td>
                         <td>
                             <span class="badge <%= statusClass %> status-badge">
                                 <i class="bi <%= statusIcon %>"></i> <%= complaint.getStatus().replace("_", " ") %>
@@ -205,17 +208,30 @@
                         </td>
                         <td>
                             <div class="btn-group">
+                                <!-- View Button -->
                                 <form action="view-complaint" method="get" style="display:inline;">
                                     <input type="hidden" name="id" value="<%= complaint.getId() %>">
                                     <button type="submit" class="btn btn-sm btn-info action-btn" title="View">
                                         <i class="bi bi-eye-fill"></i>
                                     </button>
                                 </form>
+
+                                <!-- Update/Edit Button - Only for PENDING complaints -->
                                 <% if ("PENDING".equals(complaint.getStatus())) { %>
-                                <form action="edit-complaint" method="get" style="display:inline;">
+                                <button type="button" class="btn btn-sm btn-primary action-btn"
+                                        title="Update Complaint"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#updateComplaintModal<%= complaint.getId() %>">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                <!-- Delete Button -->
+                                <form action="${pageContext.request.contextPath}/delete-complaint" method="post"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Are you sure you want to delete complaint CMP-<%= complaint.getId() %>: <%= complaint.getTitle() %>?')">
                                     <input type="hidden" name="id" value="<%= complaint.getId() %>">
-                                    <button type="submit" class="btn btn-sm btn-primary action-btn" title="Edit">
-                                        <i class="bi bi-pencil-fill"></i>
+                                    <button type="submit" class="btn btn-sm btn-danger action-btn" title="Delete">
+                                        <i class="bi bi-trash-fill"></i>
                                     </button>
                                 </form>
                                 <% } %>
@@ -244,6 +260,129 @@
         </div>
     </div>
 </div>
+
+<!-- Update Complaint Modals - Reusing the same structure as New Complaint -->
+<%
+    if (complaints != null && !complaints.isEmpty()) {
+        for (Complaint complaint : complaints) {
+            if ("PENDING".equals(complaint.getStatus())) {
+%>
+<div class="modal fade" id="updateComplaintModal<%= complaint.getId() %>" tabindex="-1"
+     aria-labelledby="updateComplaintModalLabel<%= complaint.getId() %>" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateComplaintModalLabel<%= complaint.getId() %>">
+                    <i class="bi bi-pencil-square me-2"></i>Update Complaint - CMP-<%= complaint.getId() %>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="${pageContext.request.contextPath}/update-complaint" method="post"
+                      id="updateComplaintForm<%= complaint.getId() %>">
+                    <input type="hidden" name="id" value="<%= complaint.getId() %>">
+
+                    <div class="mb-3">
+                        <label for="updateComplaintTitle<%= complaint.getId() %>" class="form-label">Complaint
+                            Title</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                            <input type="text" class="form-control" id="updateComplaintTitle<%= complaint.getId() %>"
+                                   name="title"
+                                   value="<%= complaint.getTitle() %>" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="updateComplaintCategory<%= complaint.getId() %>"
+                                   class="form-label">Category</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-folder"></i></span>
+                                <select class="form-select" id="updateComplaintCategory<%= complaint.getId() %>"
+                                        name="category" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Hardware" <%= "Hardware".equals(complaint.getCategory()) ? "selected" : "" %>>
+                                        Hardware Issue
+                                    </option>
+                                    <option value="Software" <%= "Software".equals(complaint.getCategory()) ? "selected" : "" %>>
+                                        Software Issue
+                                    </option>
+                                    <option value="Network" <%= "Network".equals(complaint.getCategory()) ? "selected" : "" %>>
+                                        Network Issue
+                                    </option>
+                                    <option value="Infrastructure" <%= "Infrastructure".equals(complaint.getCategory()) ? "selected" : "" %>>
+                                        Infrastructure
+                                    </option>
+                                    <option value="Facility" <%= "Facility".equals(complaint.getCategory()) ? "selected" : "" %>>
+                                        Facility Issue
+                                    </option>
+                                    <option value="Other" <%= "Other".equals(complaint.getCategory()) ? "selected" : "" %>>
+                                        Other
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="updateComplaintPriority<%= complaint.getId() %>"
+                                   class="form-label">Priority</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
+                                <select class="form-select" id="updateComplaintPriority<%= complaint.getId() %>"
+                                        name="priority" required>
+                                    <option value="LOW" <%= "LOW".equals(complaint.getPriority()) ? "selected" : "" %>>
+                                        Low
+                                    </option>
+                                    <option value="MEDIUM" <%= "MEDIUM".equals(complaint.getPriority()) ? "selected" : "" %>>
+                                        Medium
+                                    </option>
+                                    <option value="HIGH" <%= "HIGH".equals(complaint.getPriority()) ? "selected" : "" %>>
+                                        High
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="updateComplaintDescription<%= complaint.getId() %>"
+                               class="form-label">Description</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                            <textarea class="form-control" id="updateComplaintDescription<%= complaint.getId() %>"
+                                      name="description" rows="4"
+                                      required><%= complaint.getDescription() != null ? complaint.getDescription() : "" %></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Display current status (read-only) -->
+                    <div class="mb-3">
+                        <label class="form-label">Current Status</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-info-circle"></i></span>
+                            <input type="text" class="form-control"
+                                   value="<%= complaint.getStatus().replace("_", " ") %>" readonly>
+                        </div>
+                        <small class="text-muted">Status can only be changed by administrators</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <button type="submit" form="updateComplaintForm<%= complaint.getId() %>" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Update Complaint
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<%
+            }
+        }
+    }
+%>
 
 <!-- New Complaint Modal -->
 <div class="modal fade" id="newComplaintModal" tabindex="-1" aria-labelledby="newComplaintModalLabel"

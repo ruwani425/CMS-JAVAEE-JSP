@@ -23,14 +23,11 @@ public class AdminServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("admin servlet " + dataSource);
         HttpSession session = request.getSession(false);
-        System.out.println("admin session" + session);
         complaintModel = new ComplaintModel(dataSource);
 
         try {
             List<Complaint> complaints = complaintModel.getAllComplaints();
-            System.out.println(complaints);
             request.setAttribute("complaints", complaints);
 
             long totalComplaints = complaints.size();
@@ -69,17 +66,13 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String servletPath = req.getServletPath();
         HttpSession session = req.getSession(false);
-        System.out.println("admin session" + session);
         String action = req.getParameter("action");
 
-        System.out.println("POST request received with action: " + action);
-        System.out.println("admin session" + session);
         if (session == null) {
             System.out.println("No session found, redirecting to login");
             resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=invalid_session");
             return;
         }
-        System.out.println("servletpath: " + servletPath);
         switch (servletPath) {
             case "/admin-delete":
                 handleDeleteComplaint(req, resp, session);
@@ -92,15 +85,11 @@ public class AdminServlet extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
                 break;
         }
-
-        System.out.println(servletPath);
     }
 
     private void handleUpdateStatus(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws IOException {
         String status = req.getParameter("status");
         String complaintId = req.getParameter("complaintId");
-        System.out.println("update status: " + status);
-        System.out.println("update complaintId: " + complaintId);
 
         if (complaintId == null || complaintId.trim().isEmpty()) {
             session.setAttribute("errorMessage", "Invalid complaint ID");

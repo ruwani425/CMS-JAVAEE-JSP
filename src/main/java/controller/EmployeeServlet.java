@@ -13,8 +13,9 @@ import model.ComplaintModel;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
-@WebServlet(urlPatterns = {"/submit-complaint", "/view-complaint", "/edit-complaint", "/delete-complaint", "/my-complaints"})
+@WebServlet(urlPatterns = {"/submit-complaint", "/view-complaint", "/edit-complaint", "/delete-complaint", "/my-complaints", "/employee-dashboard"})
 public class EmployeeServlet extends HttpServlet {
 
     ComplaintModel model;
@@ -24,22 +25,22 @@ public class EmployeeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         model = new ComplaintModel(dataSource);
+
+        HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=session_expired");
+            return;
+        }
+
+        Integer employeeId = (Integer) session.getAttribute("employeeId");
+        if (employeeId == null) {
+            resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=invalid_session");
+            return;
+        }
+
         String servletPath = req.getServletPath();
 
         try {
-            HttpSession session = req.getSession(false);
-            if (session == null) {
-                resp.sendRedirect("/pages/login.jsp?msg=session_expired");
-                return;
-            }
-
-            Integer employeeId = (Integer) session.getAttribute("employeeId");
-
-            if (employeeId == null) {
-                resp.sendRedirect("/pages/login.jsp?msg=invalid_session");
-                return;
-            }
-
             switch (servletPath) {
                 case "/view-complaint":
                     handleViewComplaint(req, resp, model, employeeId);
@@ -50,13 +51,50 @@ public class EmployeeServlet extends HttpServlet {
                 case "/edit-complaint":
                     handleEditComplaint(req, resp, model, employeeId);
                     break;
+                case "/employee-dashboard":
                 default:
-                    resp.sendRedirect("/pages/employeedashboard.jsp");
+                    handleDashboard(req, resp, model, employeeId, session);
+                    break;
             }
-        } catch (IOException e) {
-            System.err.println("Error in EmployeeServlet GET: " + e.getMessage());
-            e.printStackTrace();
-            resp.sendRedirect("/pages/employeedashboard.jsp?msg=error");
+        } catch (Exception e) {
+            throw new ServletException("Error processing request", e);
+        }
+    }
+
+    private void handleDashboard(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId, HttpSession session) throws ServletException, IOException {
+        try {
+            List<Complaint> complaints = model.getAllComplaintsById(employeeId);
+            req.setAttribute("complaints", complaints);
+
+            long totalComplaints = complaints.size();
+            long pendingComplaints = complaints.stream().filter(c -> "PENDING".equals(c.getStatus())).count();
+            long resolvedComplaints = complaints.stream().filter(c -> "RESOLVED".equals(c.getStatus())).count();
+            long inProgressComplaints = complaints.stream().filter(c -> "IN_PROGRESS".equals(c.getStatus())).count();
+            long rejectedComplaints = complaints.stream().filter(c -> "REJECTED".equals(c.getStatus())).count();
+
+            req.setAttribute("totalComplaints", totalComplaints);
+            req.setAttribute("pendingComplaints", pendingComplaints);
+            req.setAttribute("resolvedComplaints", resolvedComplaints);
+            req.setAttribute("inProgressComplaints", inProgressComplaints);
+            req.setAttribute("rejectedComplaints", rejectedComplaints);
+
+            String successMessage = (String) session.getAttribute("successMessage");
+            String errorMessage = (String) session.getAttribute("errorMessage");
+
+            if (successMessage != null) {
+                req.setAttribute("successMessage", successMessage);
+                session.removeAttribute("successMessage");
+            }
+
+            if (errorMessage != null) {
+                req.setAttribute("errorMessage", errorMessage);
+                session.removeAttribute("errorMessage");
+            }
+
+            req.getRequestDispatcher("/pages/employeedashboard.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            throw new ServletException("Error loading dashboard data", e);
         }
     }
 
@@ -68,88 +106,172 @@ public class EmployeeServlet extends HttpServlet {
         try {
             HttpSession session = req.getSession(false);
             if (session == null) {
-                resp.sendRedirect("/pages/login.jsp?msg=session_expired");
+                resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=session_expired");
                 return;
             }
+
             Integer employeeId = (Integer) session.getAttribute("employeeId");
-            System.out.println("this is employee id: " + employeeId);
             String employeeName = (String) session.getAttribute("employeeName");
 
-            if (employeeId == null || employeeName.isEmpty()) {
-                resp.sendRedirect("/pages/login.jsp?msg=invalid_session");
+            if (employeeId == null || employeeName == null) {
+                resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=invalid_session");
                 return;
             }
 
             ComplaintModel model = new ComplaintModel(dataSource);
-            System.out.println(action);
-            System.out.println(servletPath);
+
             switch (servletPath) {
                 case "/submit-complaint":
-                    handleSubmitComplaint(req, resp, model, employeeId, employeeName);
+                    handleSubmitComplaint(req, resp, model, employeeId, employeeName, session);
                     break;
                 case "/delete-complaint":
-                    handleDeleteComplaint(req, resp, model, employeeId);
+                    handleDeleteComplaint(req, resp, model, employeeId, session);
                     break;
                 default:
-                    resp.sendRedirect("/pages/employeedashboard.jsp");
+                    resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
             }
 
         } catch (Exception e) {
             System.err.println("Error in EmployeeServlet POST: " + e.getMessage());
             e.printStackTrace();
-            resp.sendRedirect("/pages/employeedashboard.jsp?msg=error");
+            resp.sendRedirect(req.getContextPath() + "/employee-dashboard?msg=error");
         }
-
-
     }
 
-    private void handleSubmitComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId, String employeeName) throws ServletException {
-        String title = req.getParameter("title");
-        String description = req.getParameter("description");
-        String category = req.getParameter("category");
-        String priority = req.getParameter("priority");
-        String status = "PENDING";
-
-        Timestamp createdAt = new Timestamp(System.currentTimeMillis());
-        HttpSession session = req.getSession(false);
-
-        int submitterId = (int) session.getAttribute("employeeId");
-        String submitterName = (String) session.getAttribute("employeeName");
-
-        Complaint complaint = new Complaint();
-
-        complaint.setTitle(title);
-        complaint.setDescription(description);
-        complaint.setCategory(category);
-        complaint.setPriority(priority);
-        complaint.setStatus(status);
-        complaint.setCreatedAt(createdAt);
-        complaint.setSubmitterName(submitterName);
-        complaint.setSubmittedBy(employeeId);
-        System.out.println(submitterId);
-        System.out.println("Submitted complaint: " + complaint);
+    private void handleSubmitComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId, String employeeName, HttpSession session) throws IOException {
         try {
+            String title = req.getParameter("title");
+            String description = req.getParameter("description");
+            String category = req.getParameter("category");
+            String priority = req.getParameter("priority");
+            String status = "PENDING";
+
+            Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+
+            Complaint complaint = new Complaint();
+            complaint.setTitle(title);
+            complaint.setDescription(description);
+            complaint.setCategory(category);
+            complaint.setPriority(priority);
+            complaint.setStatus(status);
+            complaint.setCreatedAt(createdAt);
+            complaint.setSubmitterName(employeeName);
+            complaint.setSubmittedBy(employeeId);
+
             boolean isSaved = model.saveComplaint(complaint);
+
             if (isSaved) {
-                resp.sendRedirect("/cms/pages/employeedashboard.jsp");
+                session.setAttribute("successMessage", "Complaint submitted successfully!");
             } else {
-                resp.sendRedirect("/cms/pages/employeedashboard.jsp");
+                session.setAttribute("errorMessage", "Failed to submit complaint. Please try again.");
             }
+
         } catch (Exception e) {
-            throw new ServletException("Error saving complaint", e);
+            session.setAttribute("errorMessage", "Error submitting complaint: " + e.getMessage());
+            System.err.println("Error submitting complaint: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
+    }
+
+    private void handleDeleteComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId, HttpSession session) throws IOException {
+        try {
+            String complaintIdStr = req.getParameter("id");
+            if (complaintIdStr == null || complaintIdStr.trim().isEmpty()) {
+                session.setAttribute("errorMessage", "Invalid complaint ID");
+                resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
+                return;
+            }
+
+            int complaintId = Integer.parseInt(complaintIdStr);
+
+            List<Complaint> userComplaints = model.getAllComplaintsById(employeeId);
+            boolean isOwner = userComplaints.stream().anyMatch(c -> c.getId() == complaintId);
+
+            if (!isOwner) {
+                session.setAttribute("errorMessage", "You can only delete your own complaints");
+                resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
+                return;
+            }
+
+            boolean isDeleted = model.deleteComplain(complaintId);
+
+            if (isDeleted) {
+                session.setAttribute("successMessage", "Complaint deleted successfully");
+            } else {
+                session.setAttribute("errorMessage", "Failed to delete complaint");
+            }
+
+        } catch (NumberFormatException e) {
+            session.setAttribute("errorMessage", "Invalid complaint ID format");
+        } catch (Exception e) {
+            session.setAttribute("errorMessage", "Error deleting complaint: " + e.getMessage());
+            System.err.println("Error deleting complaint: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
+    }
+
+    private void handleEditComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) throws ServletException, IOException {
+        String complaintIdStr = req.getParameter("id");
+        if (complaintIdStr != null) {
+            try {
+                int complaintId = Integer.parseInt(complaintIdStr);
+                List<Complaint> userComplaints = model.getAllComplaintsById(employeeId);
+                Complaint complaint = userComplaints.stream()
+                        .filter(c -> c.getId() == complaintId)
+                        .findFirst()
+                        .orElse(null);
+
+                if (complaint != null) {
+                    req.setAttribute("complaint", complaint);
+                    req.getRequestDispatcher("/pages/edit-complaint.jsp").forward(req, resp);
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/employee-dashboard?msg=complaint_not_found");
+                }
+            } catch (NumberFormatException e) {
+                resp.sendRedirect(req.getContextPath() + "/employee-dashboard?msg=invalid_id");
+            }
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
         }
     }
 
-    private void handleDeleteComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) {
+    private void handleMyComplaints(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) throws ServletException, IOException {
+        try {
+            List<Complaint> complaints = model.getAllComplaintsById(employeeId);
+            req.setAttribute("complaints", complaints);
+            req.setAttribute("pageTitle", "My Complaints");
+            req.getRequestDispatcher("/pages/my-complaints.jsp").forward(req, resp);
+        } catch (Exception e) {
+            throw new ServletException("Error loading complaints", e);
+        }
     }
 
-    private void handleEditComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) {
+    private void handleViewComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) throws ServletException, IOException {
+        String complaintIdStr = req.getParameter("id");
+        if (complaintIdStr != null) {
+            try {
+                int complaintId = Integer.parseInt(complaintIdStr);
+                List<Complaint> userComplaints = model.getAllComplaintsById(employeeId);
+                Complaint complaint = userComplaints.stream()
+                        .filter(c -> c.getId() == complaintId)
+                        .findFirst()
+                        .orElse(null);
 
-    }
-
-    private void handleMyComplaints(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) {
-    }
-
-    private void handleViewComplaint(HttpServletRequest req, HttpServletResponse resp, ComplaintModel model, Integer employeeId) {
+                if (complaint != null) {
+                    req.setAttribute("complaint", complaint);
+                    req.getRequestDispatcher("/pages/view-complaint.jsp").forward(req, resp);
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/employee-dashboard?msg=complaint_not_found");
+                }
+            } catch (NumberFormatException e) {
+                resp.sendRedirect(req.getContextPath() + "/employee-dashboard?msg=invalid_id");
+            }
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/employee-dashboard");
+        }
     }
 }

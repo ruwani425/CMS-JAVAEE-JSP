@@ -132,4 +132,41 @@ public class ComplaintModel {
             throw e;
         }
     }
+
+    public List<Complaint> getAllComplaintsById(Integer employeeId) {
+        List<Complaint> complaints = new ArrayList<>();
+        String sql = "SELECT * FROM complaints WHERE submitted_by = ? ORDER BY created_at DESC";
+        String query = "select username from users where id = ?";
+
+        try (Connection conn = ds.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Complaint c = new Complaint();
+                c.setId(rs.getInt("id"));
+                c.setTitle(rs.getString("title"));
+                c.setDescription(rs.getString("description"));
+                c.setCategory(rs.getString("category"));
+                c.setPriority(rs.getString("priority"));
+                c.setCreatedAt(rs.getTimestamp("created_at"));
+                c.setStatus(rs.getString("status"));
+
+                try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+                    preparedStatement.setInt(1, rs.getInt("submitted_by"));
+                    ResultSet rs2 = preparedStatement.executeQuery();
+                    while (rs2.next()) {
+                        c.setSubmitterName(rs2.getString("username"));
+                    }
+                }
+                complaints.add(c);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error loading complaints for employee ID " + employeeId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        return complaints;
+    }
 }

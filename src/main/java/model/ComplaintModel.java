@@ -112,4 +112,24 @@ public class ComplaintModel {
             throw new RuntimeException(e);
         }
     }
+
+    public boolean updateComplaintStatus(int complaintId, String newStatus) throws SQLException {
+        String sql = "UPDATE complaints SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+
+        try (Connection conn = ds.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, newStatus.toUpperCase());
+            stmt.setInt(2, complaintId);
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Updated complaint " + complaintId + " status to " + newStatus +
+                    ". Rows affected: " + rowsAffected);
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating complaint status: " + e.getMessage());
+            throw e;
+        }
+    }
 }

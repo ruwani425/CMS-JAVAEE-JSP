@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "AdminServlet", urlPatterns = {"/admin-dashboard","/admin-delete"})
+@WebServlet(name = "AdminServlet", urlPatterns = {"/admin-dashboard", "/admin-delete", "/update-status"})
 public class AdminServlet extends HttpServlet {
 
     ComplaintModel complaintModel;
@@ -25,7 +25,7 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         System.out.println("admin servlet " + dataSource);
         HttpSession session = request.getSession(false);
-        System.out.println("admin session"+session);
+        System.out.println("admin session" + session);
         complaintModel = new ComplaintModel(dataSource);
 
         try {
@@ -69,25 +69,73 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String servletPath = req.getServletPath();
         HttpSession session = req.getSession(false);
-        System.out.println("admin session"+session);
+        System.out.println("admin session" + session);
         String action = req.getParameter("action");
 
         System.out.println("POST request received with action: " + action);
-        System.out.println("admin session"+session);
+        System.out.println("admin session" + session);
         if (session == null) {
             System.out.println("No session found, redirecting to login");
             resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=invalid_session");
             return;
         }
         System.out.println("servletpath: " + servletPath);
-        if ("/admin-delete".equals(servletPath)) {
-            handleDeleteComplaint(req, resp, session);
-        } else {
-            System.out.println("Unknown action: " + action);
-            resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
+        switch (servletPath) {
+            case "/admin-delete":
+                handleDeleteComplaint(req, resp, session);
+                break;
+            case "/update-status":
+                handleUpdateStatus(req, resp, session);
+                break;
+            default:
+                System.out.println("Unknown servlet path: " + servletPath);
+                resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
+                break;
         }
 
         System.out.println(servletPath);
+    }
+
+    private void handleUpdateStatus(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws IOException {
+        String status = req.getParameter("status");
+        String complaintId = req.getParameter("complaintId");
+        System.out.println("update status: " + status);
+        System.out.println("update complaintId: " + complaintId);
+
+        if (complaintId == null || complaintId.trim().isEmpty()) {
+            session.setAttribute("errorMessage", "Invalid complaint ID");
+            resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
+            return;
+        }
+
+        if (status == null || status.trim().isEmpty()) {
+            session.setAttribute("errorMessage", "Status cannot be empty");
+            resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
+            return;
+        }
+        try {
+            int id = Integer.parseInt(complaintId);
+            complaintModel = new ComplaintModel(dataSource);
+
+            if (!complaintModel.complaintExists(id)) {
+                session.setAttribute("errorMessage", "Complaint not found");
+                resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
+                return;
+            }
+            boolean isUpdated = complaintModel.updateComplaintStatus(id, status);
+            if (isUpdated) {
+                session.setAttribute("successMessage", "Status updated successfully for complaint CMP-" + id + " to " + status.replace("_", " "));
+                System.out.println("Status updated successfully for complaint: " + id);
+            } else {
+                session.setAttribute("errorMessage", "Failed to update status");
+                System.out.println("Failed to update status for complaint: " + id);
+            }
+        } catch (Exception e) {
+            session.setAttribute("errorMessage", "Error updating status: " + e.getMessage());
+            System.err.println("Error updating status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin-dashboard");
     }
 
     private void handleDeleteComplaint(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws IOException {

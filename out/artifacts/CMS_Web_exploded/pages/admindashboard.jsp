@@ -12,6 +12,52 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/admindashboard.css">
+    <style>
+        .status-form {
+            display: inline-block;
+            margin: 0;
+        }
+
+        .status-dropdown {
+            border: 1px solid #dee2e6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .status-PENDING {
+            background-color: #fff3cd;
+            color: #664d03;
+            border-color: #ffc107;
+        }
+
+        .status-IN_PROGRESS {
+            background-color: #cff4fc;
+            color: #055160;
+            border-color: #0dcaf0;
+        }
+
+        .status-RESOLVED {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border-color: #198754;
+        }
+
+        .status-REJECTED {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #dc3545;
+        }
+
+        .update-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            margin-left: 0.25rem;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg top-navbar">
@@ -53,6 +99,24 @@
             </div>
         </div>
     </div>
+
+    <!-- Success/Error Messages -->
+    <%
+        String successMessage = (String) request.getAttribute("successMessage");
+        String errorMessage = (String) request.getAttribute("errorMessage");
+        if (successMessage != null) {
+    %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i><%= successMessage %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+    <% if (errorMessage != null) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><%= errorMessage %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
 
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
@@ -163,31 +227,7 @@
                         if (complaints != null && !complaints.isEmpty()) {
                             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                             for (Complaint complaint : complaints) {
-                                String statusClass = "";
-                                String statusIcon = "";
                                 String priorityClass = "";
-
-                                switch (complaint.getStatus()) {
-                                    case "RESOLVED":
-                                        statusClass = "bg-success";
-                                        statusIcon = "bi-check-circle-fill";
-                                        break;
-                                    case "PENDING":
-                                        statusClass = "bg-warning";
-                                        statusIcon = "bi-hourglass";
-                                        break;
-                                    case "IN_PROGRESS":
-                                        statusClass = "bg-info";
-                                        statusIcon = "bi-arrow-repeat";
-                                        break;
-                                    case "REJECTED":
-                                        statusClass = "bg-danger";
-                                        statusIcon = "bi-x-circle-fill";
-                                        break;
-                                    default:
-                                        statusClass = "bg-secondary";
-                                        statusIcon = "bi-question-circle";
-                                }
 
                                 switch (complaint.getPriority()) {
                                     case "HIGH":
@@ -202,20 +242,45 @@
                                 }
                     %>
                     <tr>
-                        <td><strong>CMP-<%= complaint.getId() %></strong></td>
+                        <td><strong>CMP-<%= complaint.getId() %>
+                        </strong></td>
                         <td>
-                            <div class="complaint-title" title="<%= complaint.getDescription() != null ? complaint.getDescription() : complaint.getTitle() %>">
+                            <div class="complaint-title"
+                                 title="<%= complaint.getDescription() != null ? complaint.getDescription() : complaint.getTitle() %>">
                                 <%= complaint.getTitle() %>
                             </div>
                         </td>
                         <td><span class="badge bg-light text-dark"><%= complaint.getCategory() %></span></td>
-                        <td><%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %></td>
-                        <td><span class="<%= priorityClass %>"><strong><%= complaint.getPriority() %></strong></span></td>
-                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %></td>
+                        <td><%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %>
+                        </td>
+                        <td><span class="<%= priorityClass %>"><strong><%= complaint.getPriority() %></strong></span>
+                        </td>
+                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %>
+                        </td>
                         <td>
-                            <span class="badge <%= statusClass %> status-badge">
-                                <i class="bi <%= statusIcon %>"></i> <%= complaint.getStatus().replace("_", " ") %>
-                            </span>
+                            <form action="update-status" method="post" class="status-form">
+                                <input type="hidden" name="complaintId" value="<%= complaint.getId() %>">
+                                <div class="d-flex align-items-center">
+                                    <select name="status" class="status-dropdown status-<%= complaint.getStatus() %>">
+                                        <option value="PENDING" <%= "PENDING".equals(complaint.getStatus()) ? "selected" : "" %>>
+                                            Pending
+                                        </option>
+                                        <option value="IN_PROGRESS" <%= "IN_PROGRESS".equals(complaint.getStatus()) ? "selected" : "" %>>
+                                            In Progress
+                                        </option>
+                                        <option value="RESOLVED" <%= "RESOLVED".equals(complaint.getStatus()) ? "selected" : "" %>>
+                                            Resolved
+                                        </option>
+                                        <option value="REJECTED" <%= "REJECTED".equals(complaint.getStatus()) ? "selected" : "" %>>
+                                            Rejected
+                                        </option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary update-btn"
+                                            title="Update Status">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                </div>
+                            </form>
                         </td>
                         <td>
                             <div class="btn-group">
@@ -225,12 +290,6 @@
                                         <i class="bi bi-eye-fill"></i>
                                     </button>
                                 </form>
-<%--                                <form action="update-status" method="get" style="display:inline;">--%>
-<%--                                    <input type="hidden" name="id" value="<%= complaint.getId() %>">--%>
-<%--                                    <button type="submit" class="btn btn-sm btn-primary action-btn" title="Edit">--%>
-<%--                                        <i class="bi bi-pencil-fill"></i>--%>
-<%--                                    </button>--%>
-<%--                                </form>--%>
                                 <form action="admin-delete" method="post" style="display:inline;"
                                       onsubmit="return confirm('Are you sure you want to delete this complaint?');">
                                     <input type="hidden" name="id" value="<%= complaint.getId() %>">
@@ -281,6 +340,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

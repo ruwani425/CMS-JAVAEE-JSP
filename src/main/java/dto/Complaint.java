@@ -34,5 +34,9 @@ public class Complaint {
         this.status = "PENDING";
         this.priority = "MEDIUM";
     }
+
+    public Complaint(int id, String title, String description, String category, String priority) {
+
+    }
 }
 

@@ -189,4 +189,27 @@ public class ComplaintModel {
         }
         return complaints;
     }
+
+    public boolean updateComplaint(Complaint complaint) throws SQLException {
+        String sql = "UPDATE complaints SET title = ?, description = ?, category = ?, priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+
+        try (Connection conn = ds.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, complaint.getTitle());
+            stmt.setString(2, complaint.getDescription());
+            stmt.setString(3, complaint.getCategory());
+            stmt.setString(4, complaint.getPriority());
+            stmt.setInt(5, complaint.getId());
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Updated complaint " + complaint.getId() +
+                    ". Rows affected: " + rowsAffected);
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating complaint: " + e.getMessage());
+            throw e;
+        }
+    }
 }

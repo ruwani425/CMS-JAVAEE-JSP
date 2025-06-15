@@ -22,7 +22,6 @@ public class ComplaintModel {
         String sql = "SELECT * FROM complaints ORDER BY created_at DESC";
         String query = "select username from users where id = ?";
 
-
         try (Connection conn = ds.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -38,6 +37,7 @@ public class ComplaintModel {
                 c.setPriority(rs.getString("priority"));
                 c.setCreatedAt(rs.getTimestamp("created_at"));
                 c.setStatus(rs.getString("status"));
+                c.setAdminRemarks(rs.getString("admin_remarks")); // Add this line
 
                 try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
                     preparedStatement.setInt(1, rs.getInt("submitted_by"));
@@ -100,7 +100,6 @@ public class ComplaintModel {
         }
     }
 
-
     public boolean deleteComplain(int complaintId) {
         String sql = "DELETE FROM complaints WHERE id = ?";
         try (Connection conn = ds.getConnection()) {
@@ -133,6 +132,26 @@ public class ComplaintModel {
         }
     }
 
+    public boolean updateAdminRemarks(int complaintId, String remarks) throws SQLException {
+        String sql = "UPDATE complaints SET admin_remarks = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+
+        try (Connection conn = ds.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, remarks);
+            stmt.setInt(2, complaintId);
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Updated admin remarks for complaint " + complaintId +
+                    ". Rows affected: " + rowsAffected);
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating admin remarks: " + e.getMessage());
+            throw e;
+        }
+    }
+
     public List<Complaint> getAllComplaintsById(Integer employeeId) {
         List<Complaint> complaints = new ArrayList<>();
         String sql = "SELECT * FROM complaints WHERE submitted_by = ? ORDER BY created_at DESC";
@@ -153,6 +172,7 @@ public class ComplaintModel {
                 c.setPriority(rs.getString("priority"));
                 c.setCreatedAt(rs.getTimestamp("created_at"));
                 c.setStatus(rs.getString("status"));
+                c.setAdminRemarks(rs.getString("admin_remarks")); // Add this line
 
                 try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
                     preparedStatement.setInt(1, rs.getInt("submitted_by"));

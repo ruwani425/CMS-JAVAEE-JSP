@@ -22,10 +22,8 @@ body {
 }
 
 .top-navbar {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    box-shadow: 0 4px 20px rgba(44, 62, 80, 0.3);
-    padding: 15px 0;
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
 
 .navbar-brand {
@@ -33,7 +31,6 @@ body {
     font-weight: 700;
     color: white !important;
     letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .navbar-nav .nav-link {
@@ -58,20 +55,13 @@ body {
 }
 
 .logout-btn {
-    background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
-    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
-    border-radius: 8px;
-    padding: 0.6rem 1.2rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
 .logout-btn:hover {
-    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    background: rgba(255, 255, 255, 0.3);
     color: white;
 }
 

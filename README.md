@@ -1,4 +1,4 @@
-# 🛠️ Complaint Management System (CMS)
+<img width="1512" alt="Screenshot 2025-06-16 at 3 06 20 PM" src="https://github.com/user-attachments/assets/27731611-f772-46be-8837-137872a75ab1" /><img width="1512" alt="Screenshot 2025-06-16 at 3 06 20 PM" src="https://github.com/user-attachments/assets/354631ef-3ba9-49e2-b8f8-d436be11708a" /># 🛠️ Complaint Management System (CMS)
 
 A simple and elegant **Complaint Management System** built with **Jakarta EE**, **Tomcat**, **MySQL**, **JSP**, **Servlets**, **Bootstrap**, and **JavaScript**. It supports both Admin and Employee functionalities.
 
@@ -147,10 +147,12 @@ Files involved:
 ## 📸 Screenshots
 
 ### 🧑‍💼 Employee Panel - Dashboard
-![Employee Dashboard](screenshots/screenshot-employee-dashboard.png)
+<img width="1512" alt="Screenshot 2025-06-16 at 3 06 20 PM" src="https://github.com/user-attachments/assets/d23321bc-8d8f-443a-93bb-892c648f4325" />
+
 
 ### 🛠️ Admin Panel - Dashboard
-![Admin Dashboard](screenshots/screenshot-admin-dashboard.png)
+
+<img width="1512" alt="Screenshot 2025-06-16 at 3 07 05 PM" src="https://github.com/user-attachments/assets/7c257fc4-20af-4765-b3da-cfc391870ac6" />
 
 ---
 

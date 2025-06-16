@@ -157,7 +157,6 @@ public class EmployeeServlet extends HttpServlet {
 
             int complaintId = Integer.parseInt(complaintIdStr);
 
-            // Verify the complaint belongs to this employee and is PENDING
             List<Complaint> userComplaints = model.getAllComplaintsById(employeeId);
             Complaint existingComplaint = userComplaints.stream()
                     .filter(c -> c.getId() == complaintId && "PENDING".equals(c.getStatus()))

@@ -9,16 +9,6 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-/**
- * <b>Header</b>
- * <p>
- * Description
- * </p>
- *
- * @author Ruwani Ranthika
- * @since 2025-06-15
- */
-
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
     @Override

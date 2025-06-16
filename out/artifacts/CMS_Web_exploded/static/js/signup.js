@@ -11,35 +11,41 @@ function validateField(fieldName) {
 
     switch (fieldName) {
         case "fullName":
-            if (value.length < 3) {
+            if (value.length > 0 && value.length < 3) {
                 errorMessage = "Full name must be at least 3 characters."
                 isValid = false
             }
             break
 
         case "email":
-            const emailPattern = /^[^\s]+@[^\s]+\.[a-z]{2,3}$/i
-            if (!emailPattern.test(value)) {
-                errorMessage = "Please enter a valid email address."
-                isValid = false
+            if (value.length > 0) {
+                const emailPattern = /^[^\s]+@[^\s]+\.[a-z]{2,3}$/i
+                if (!emailPattern.test(value)) {
+                    errorMessage = "Please enter a valid email address."
+                    isValid = false
+                }
             }
             break
 
         case "username":
-            if (value.length < 4) {
-                errorMessage = "Username must be at least 4 characters."
-                isValid = false
-            } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-                errorMessage = "Username can only contain letters, numbers, and underscores."
-                isValid = false
+            if (value.length > 0) {
+                if (value.length < 4) {
+                    errorMessage = "Username must be at least 4 characters."
+                    isValid = false
+                } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+                    errorMessage = "Username can only contain letters, numbers, and underscores."
+                    isValid = false
+                }
             }
             break
 
         case "password":
-            const passwordErrors = validatePassword(value)
-            if (passwordErrors.length > 0) {
-                errorMessage = passwordErrors[0] // Show first error
-                isValid = false
+            if (value.length > 0) {
+                const passwordErrors = validatePassword(value)
+                if (passwordErrors.length > 0) {
+                    errorMessage = passwordErrors[0]
+                    isValid = false
+                }
             }
             break
     }
@@ -128,6 +134,13 @@ function showPasswordStrength() {
 }
 
 function validateForm() {
+    const form = document.getElementById("signupForm")
+
+    if (!form.checkValidity()) {
+        form.reportValidity()
+        return false
+    }
+
     const fields = ["fullName", "email", "username", "password"]
     let isFormValid = true
 

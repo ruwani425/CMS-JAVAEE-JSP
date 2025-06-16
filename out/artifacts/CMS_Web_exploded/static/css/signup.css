@@ -120,7 +120,6 @@ body {
     background-color: rgba(52, 152, 219, 0.1);
 }
 
-/* Error styling */
 .error-input {
     border-color: var(--danger-color) !important;
     box-shadow: 0 0 0 0.25rem rgba(231, 76, 60, 0.15) !important;

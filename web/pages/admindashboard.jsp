@@ -12,52 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/admindashboard.css">
-    <style>
-        .status-form {
-            display: inline-block;
-            margin: 0;
-        }
-
-        .status-dropdown {
-            border: 1px solid #dee2e6;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            min-width: 120px;
-        }
-
-        .status-PENDING {
-            background-color: #fff3cd;
-            color: #664d03;
-            border-color: #ffc107;
-        }
-
-        .status-IN_PROGRESS {
-            background-color: #cff4fc;
-            color: #055160;
-            border-color: #0dcaf0;
-        }
-
-        .status-RESOLVED {
-            background-color: #d1e7dd;
-            color: #0f5132;
-            border-color: #198754;
-        }
-
-        .status-REJECTED {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #dc3545;
-        }
-
-        .update-btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            margin-left: 0.25rem;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/simple-validation.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg top-navbar">
@@ -100,7 +55,6 @@
         </div>
     </div>
 
-    <!-- Success/Error Messages -->
     <%
         String successMessage = (String) request.getAttribute("successMessage");
         String errorMessage = (String) request.getAttribute("errorMessage");
@@ -157,43 +111,6 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="bi bi-funnel me-2"></i>Filter Complaints
-        </div>
-        <div class="card-body">
-            <form action="admin-dashboard" method="get" class="row g-3">
-                <div class="col-md-3">
-                    <label for="statusFilter" class="form-label">Filter by Status</label>
-                    <select class="form-select" id="statusFilter" name="status">
-                        <option value="">All Statuses</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="IN_PROGRESS">In Progress</option>
-                        <option value="RESOLVED">Resolved</option>
-                        <option value="REJECTED">Rejected</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="dateFilter" class="form-label">Date Range</label>
-                    <input type="date" class="form-control" id="dateFilter" name="date">
-                </div>
-                <div class="col-md-4">
-                    <label for="searchFilter" class="form-label">Search</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchFilter" name="search"
-                               placeholder="Search by ID, title, or employee">
-                    </div>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-filter"></i> Apply
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
@@ -242,7 +159,8 @@
                                 }
                     %>
                     <tr>
-                        <td><strong>CMP-<%= complaint.getId() %></strong></td>
+                        <td><strong>CMP-<%= complaint.getId() %>
+                        </strong></td>
                         <td>
                             <div class="complaint-title"
                                  title="<%= complaint.getDescription() != null ? complaint.getDescription() : complaint.getTitle() %>">
@@ -250,9 +168,12 @@
                             </div>
                         </td>
                         <td><span class="badge bg-light text-dark"><%= complaint.getCategory() %></span></td>
-                        <td><%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %></td>
-                        <td><span class="<%= priorityClass %>"><strong><%= complaint.getPriority() %></strong></span></td>
-                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %></td>
+                        <td><%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %>
+                        </td>
+                        <td><span class="<%= priorityClass %>"><strong><%= complaint.getPriority() %></strong></span>
+                        </td>
+                        <td><%= complaint.getCreatedAt() != null ? dateFormat.format(complaint.getCreatedAt()) : "N/A" %>
+                        </td>
                         <td>
                             <form action="update-status" method="post" class="status-form">
                                 <input type="hidden" name="complaintId" value="<%= complaint.getId() %>">
@@ -281,14 +202,11 @@
                         <td>
                             <div class="btn-group">
                                 <!-- View Button -->
-                                <form action="view-complaint" method="get" style="display:inline;">
-                                    <input type="hidden" name="id" value="<%= complaint.getId() %>">
-                                    <button type="submit" class="btn btn-sm btn-info action-btn" title="View">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-info action-btn" title="View"
+                                        data-bs-toggle="modal" data-bs-target="#viewModal<%= complaint.getId() %>">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
 
-                                <!-- Add Remarks Button -->
                                 <button type="button" class="btn btn-sm btn-warning action-btn"
                                         title="Add Remarks"
                                         data-bs-toggle="modal"
@@ -296,7 +214,6 @@
                                     <i class="bi bi-chat-left-text-fill"></i>
                                 </button>
 
-                                <!-- Delete Button -->
                                 <form action="admin-delete" method="post" style="display:inline;"
                                       onsubmit="return confirm('Are you sure you want to delete this complaint?');">
                                     <input type="hidden" name="id" value="<%= complaint.getId() %>">
@@ -348,7 +265,6 @@
     </div>
 </div>
 
-<!-- Simple Add Remarks Modals -->
 <%
     if (complaints != null && !complaints.isEmpty()) {
         for (Complaint complaint : complaints) {
@@ -365,8 +281,11 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <p><strong>Complaint:</strong> <%= complaint.getTitle() %></p>
-                    <p><strong>Employee:</strong> <%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %></p>
+                    <p><strong>Complaint:</strong> <%= complaint.getTitle() %>
+                    </p>
+                    <p>
+                        <strong>Employee:</strong> <%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %>
+                    </p>
                     <p><strong>Status:</strong>
                         <span class="badge status-<%= complaint.getStatus() %>">
                             <%= complaint.getStatus().replace("_", " ") %>
@@ -379,9 +298,18 @@
                     <input type="hidden" name="complaintId" value="<%= complaint.getId() %>">
 
                     <div class="mb-3">
-                        <label for="remarks<%= complaint.getId() %>" class="form-label">Admin Remarks:</label>
+                        <label for="remarks<%= complaint.getId() %>" class="form-label">
+                            Admin Remarks: <span class="text-danger">*</span>
+                        </label>
                         <textarea class="form-control" id="remarks<%= complaint.getId() %>" name="remarks"
-                                  rows="4" placeholder="Enter your remarks here..." required></textarea>
+                                  rows="4" placeholder="Enter your remarks here..."
+                                  maxlength="500" required></textarea>
+
+                        <span class="form-text text-muted" id="charCounter<%= complaint.getId() %>">
+                            0/500 characters
+                        </span>
+
+                        <span class="error-message" id="remarksError<%= complaint.getId() %>"></span>
                     </div>
                 </form>
             </div>
@@ -389,7 +317,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Cancel
                 </button>
-                <button type="submit" form="remarksForm<%= complaint.getId() %>" class="btn btn-warning">
+                <button type="button" onclick="submitRemarksForm('<%= complaint.getId() %>')" class="btn btn-warning">
                     <i class="bi bi-check-circle"></i> Add Remarks
                 </button>
             </div>
@@ -401,6 +329,122 @@
     }
 %>
 
+<%
+    if (complaints != null && !complaints.isEmpty()) {
+        for (Complaint complaint : complaints) {
+%>
+<div class="modal fade" id="viewModal<%= complaint.getId() %>" tabindex="-1"
+     aria-labelledby="viewModalLabel<%= complaint.getId() %>" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="viewModalLabel<%= complaint.getId() %>">
+                    <i class="bi bi-eye-fill me-2"></i>View Complaint - CMP-<%= complaint.getId() %>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Complaint ID:</label>
+                            <p class="form-control-plaintext">CMP-<%= complaint.getId() %>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status:</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge status-<%= complaint.getStatus() %>">
+                                    <%= complaint.getStatus().replace("_", " ") %>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title:</label>
+                    <p class="form-control-plaintext"><%= complaint.getTitle() %>
+                    </p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Category:</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-light text-dark"><%= complaint.getCategory() %></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Priority:</label>
+                            <p class="form-control-plaintext">
+                                <span class="<%=
+                                    "HIGH".equals(complaint.getPriority()) ? "text-danger" :
+                                    "MEDIUM".equals(complaint.getPriority()) ? "text-warning" : "text-success"
+                                %>">
+                                    <strong><%= complaint.getPriority() %></strong>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Employee:</label>
+                            <p class="form-control-plaintext"><%= complaint.getSubmitterName() != null ? complaint.getSubmitterName() : "Unknown" %>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Date Created:</label>
+                            <p class="form-control-plaintext">
+                                <%= complaint.getCreatedAt() != null ? new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(complaint.getCreatedAt()) : "N/A" %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description:</label>
+                    <div class="border rounded p-3 bg-light">
+                        <p class="mb-0"><%= complaint.getDescription() != null ? complaint.getDescription() : "No description provided" %>
+                        </p>
+                    </div>
+                </div>
+
+                <% if (complaint.getAdminRemarks() != null && !complaint.getAdminRemarks().trim().isEmpty()) { %>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Admin Remarks:</label>
+                    <div class="border rounded p-3 bg-warning bg-opacity-10">
+                        <p class="mb-0"><%= complaint.getAdminRemarks() %>
+                        </p>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<%
+        }
+    }
+%>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/static/js/remarks-validation.js"></script>
 </body>
 </html>

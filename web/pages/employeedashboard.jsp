@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/complaint-validation.css">
 </head>
 <body>
-<!-- Top Navigation -->
+
 <nav class="navbar navbar-expand-lg top-navbar">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -45,9 +45,7 @@
     </div>
 </nav>
 
-<!-- Main Content -->
 <div class="container-fluid main-content">
-    <!-- Page Header -->
     <div class="page-header">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
             <h1 class="h2"><i class="bi bi-grid-1x2 me-2"></i>Employee Dashboard</h1>
@@ -58,7 +56,6 @@
         </div>
     </div>
 
-    <!-- Success/Error Messages -->
     <%
         String successMessage = (String) request.getAttribute("successMessage");
         String errorMessage = (String) request.getAttribute("errorMessage");
@@ -76,7 +73,6 @@
     </div>
     <% } %>
 
-    <!-- Summary Cards -->
     <div class="row mb-4">
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card text-white bg-primary-gradient">
@@ -107,7 +103,6 @@
         </div>
     </div>
 
-    <!-- My Complaints Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
@@ -120,9 +115,6 @@
                 %>
                 <span class="badge bg-secondary me-2">Showing <%= complaintCount %> complaints</span>
                 <form action="my-complaints" method="get" style="display: inline;">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-eye"></i> View All
-                    </button>
                 </form>
             </div>
         </div>
@@ -149,7 +141,6 @@
                                 String statusIcon = "";
                                 String priorityClass = "";
 
-                                // Status styling
                                 switch (complaint.getStatus()) {
                                     case "RESOLVED":
                                         statusClass = "bg-success";
@@ -209,15 +200,11 @@
                         </td>
                         <td>
                             <div class="btn-group">
-                                <!-- View Button -->
-                                <form action="view-complaint" method="get" style="display:inline;">
-                                    <input type="hidden" name="id" value="<%= complaint.getId() %>">
-                                    <button type="submit" class="btn btn-sm btn-info action-btn" title="View">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-info action-btn" title="View"
+                                        data-bs-toggle="modal" data-bs-target="#viewModal<%= complaint.getId() %>">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
 
-                                <!-- Update/Edit Button - Only for PENDING complaints -->
                                 <% if ("PENDING".equals(complaint.getStatus())) { %>
                                 <button type="button" class="btn btn-sm btn-primary action-btn"
                                         title="Update Complaint"
@@ -226,7 +213,6 @@
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
 
-                                <!-- Delete Button -->
                                 <form action="${pageContext.request.contextPath}/delete-complaint" method="post"
                                       style="display:inline;"
                                       onsubmit="return confirm('Are you sure you want to delete complaint CMP-<%= complaint.getId() %>: <%= complaint.getTitle() %>?')">
@@ -262,7 +248,6 @@
     </div>
 </div>
 
-<!-- Update Complaint Modals -->
 <%
     if (complaints != null && !complaints.isEmpty()) {
         for (Complaint complaint : complaints) {
@@ -363,7 +348,6 @@
                         </div>
                     </div>
 
-                    <!-- Display current status (read-only) -->
                     <div class="mb-3">
                         <label class="form-label">Current Status</label>
                         <div class="input-group">
@@ -393,7 +377,6 @@
     }
 %>
 
-<!-- New Complaint Modal -->
 <div class="modal fade" id="newComplaintModal" tabindex="-1" aria-labelledby="newComplaintModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -468,6 +451,141 @@
         </div>
     </div>
 </div>
+
+<%
+    if (complaints != null && !complaints.isEmpty()) {
+        for (Complaint complaint : complaints) {
+%>
+<div class="modal fade" id="viewModal<%= complaint.getId() %>" tabindex="-1"
+     aria-labelledby="viewModalLabel<%= complaint.getId() %>" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="viewModalLabel<%= complaint.getId() %>">
+                    <i class="bi bi-eye-fill me-2"></i>My Complaint - CMP-<%= complaint.getId() %>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Complaint ID:</label>
+                            <p class="form-control-plaintext">CMP-<%= complaint.getId() %>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status:</label>
+                            <p class="form-control-plaintext">
+                                <%
+                                    String statusClass = "";
+                                    String statusIcon = "";
+                                    switch (complaint.getStatus()) {
+                                        case "RESOLVED":
+                                            statusClass = "bg-success";
+                                            statusIcon = "bi-check-circle-fill";
+                                            break;
+                                        case "PENDING":
+                                            statusClass = "bg-warning";
+                                            statusIcon = "bi-hourglass";
+                                            break;
+                                        case "IN_PROGRESS":
+                                            statusClass = "bg-info";
+                                            statusIcon = "bi-arrow-repeat";
+                                            break;
+                                        case "REJECTED":
+                                            statusClass = "bg-danger";
+                                            statusIcon = "bi-x-circle-fill";
+                                            break;
+                                        default:
+                                            statusClass = "bg-secondary";
+                                            statusIcon = "bi-question-circle";
+                                    }
+                                %>
+                                <span class="badge <%= statusClass %> status-badge">
+                                    <i class="bi <%= statusIcon %>"></i> <%= complaint.getStatus().replace("_", " ") %>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title:</label>
+                    <p class="form-control-plaintext"><%= complaint.getTitle() %>
+                    </p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Category:</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-secondary"><%= complaint.getCategory() %></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Priority:</label>
+                            <p class="form-control-plaintext">
+                                <span class="<%=
+                                    "HIGH".equals(complaint.getPriority()) ? "text-danger" :
+                                    "MEDIUM".equals(complaint.getPriority()) ? "text-warning" : "text-success"
+                                %>">
+                                    <strong><%= complaint.getPriority() %></strong>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Date Created:</label>
+                    <p class="form-control-plaintext">
+                        <%= complaint.getCreatedAt() != null ? new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(complaint.getCreatedAt()) : "N/A" %>
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description:</label>
+                    <div class="border rounded p-3 bg-light">
+                        <p class="mb-0"><%= complaint.getDescription() != null ? complaint.getDescription() : "No description provided" %>
+                        </p>
+                    </div>
+                </div>
+
+                <% if (complaint.getAdminRemarks() != null && !complaint.getAdminRemarks().trim().isEmpty()) { %>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Admin Remarks:</label>
+                    <div class="border rounded p-3 bg-warning bg-opacity-10">
+                        <p class="mb-0"><%= complaint.getAdminRemarks() %>
+                        </p>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Close
+                </button>
+                <% if ("PENDING".equals(complaint.getStatus())) { %>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                        data-bs-toggle="modal" data-bs-target="#updateComplaintModal<%= complaint.getId() %>">
+                    <i class="bi bi-pencil-square"></i> Edit Complaint
+                </button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+<%
+        }
+    }
+%>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/static/js/complaint.js"></script>

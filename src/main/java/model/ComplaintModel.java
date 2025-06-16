@@ -172,7 +172,7 @@ public class ComplaintModel {
                 c.setPriority(rs.getString("priority"));
                 c.setCreatedAt(rs.getTimestamp("created_at"));
                 c.setStatus(rs.getString("status"));
-                c.setAdminRemarks(rs.getString("admin_remarks")); // Add this line
+                c.setAdminRemarks(rs.getString("admin_remarks"));
 
                 try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
                     preparedStatement.setInt(1, rs.getInt("submitted_by"));

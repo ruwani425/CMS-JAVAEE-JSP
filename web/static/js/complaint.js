@@ -19,10 +19,7 @@ function validateComplaintField(fieldId, fieldName) {
 
     switch (fieldName) {
         case "title":
-            if (value.length === 0) {
-                errorMessage = "Complaint title is required."
-                isValid = false
-            } else if (value.length < 5) {
+            if (value.length > 0 && value.length < 5) {
                 errorMessage = "Complaint title must be at least 5 characters."
                 isValid = false
             } else if (value.length > 100) {
@@ -32,24 +29,11 @@ function validateComplaintField(fieldId, fieldName) {
             break
 
         case "category":
-            if (value === "" || value === null) {
-                errorMessage = "Please select a complaint category."
-                isValid = false
-            }
-            break
-
         case "priority":
-            if (value === "" || value === null) {
-                errorMessage = "Please select a priority level."
-                isValid = false
-            }
             break
 
         case "description":
-            if (value.length === 0) {
-                errorMessage = "Description is required."
-                isValid = false
-            } else if (value.length < 10) {
+            if (value.length > 0 && value.length < 10) {
                 errorMessage = "Description must be at least 10 characters."
                 isValid = false
             } else if (value.length > 1000) {
@@ -78,6 +62,13 @@ function validateComplaintField(fieldId, fieldName) {
 }
 
 function validateNewComplaintForm() {
+    const form = document.getElementById("complaintForm")
+
+    if (!form.checkValidity()) {
+        form.reportValidity()
+        return false
+    }
+
     const fields = [
         {id: "complaintTitle", name: "title"},
         {id: "complaintCategory", name: "category"},
@@ -112,6 +103,13 @@ function validateNewComplaintForm() {
 }
 
 function validateUpdateComplaintForm(complaintId) {
+    const form = document.getElementById(`updateComplaintForm${complaintId}`)
+
+    if (!form.checkValidity()) {
+        form.reportValidity()
+        return false
+    }
+
     const fields = [
         {id: `updateComplaintTitle${complaintId}`, name: "title"},
         {id: `updateComplaintCategory${complaintId}`, name: "category"},
@@ -324,6 +322,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     })
 })
+document.getElementById('status').addEventListener('change', function () {
+    const status = this.value;
+    const remarksField = document.getElementById('adminRemarks');
 
+    if (status === 'RESOLVED' && remarksField.value.trim() === '') {
+        remarksField.placeholder = 'Please describe how the complaint was resolved...';
+    } else if (status === 'REJECTED' && remarksField.value.trim() === '') {
+        remarksField.placeholder = 'Please provide reason for rejection...';
+    } else if (status === 'IN_PROGRESS' && remarksField.value.trim() === '') {
+        remarksField.placeholder = 'Please describe current progress and next steps...';
+    }
+});
+
+document.querySelector('form').addEventListener('submit', function (e) {
+    const status = document.getElementById('status').value;
+    const remarks = document.getElementById('adminRemarks').value.trim();
+
+    if ((status === 'RESOLVED' || status === 'REJECTED') && remarks === '') {
+        e.preventDefault();
+        alert('Please add remarks when marking a complaint as ' + status.toLowerCase() + '.');
+        document.getElementById('adminRemarks').focus();
+        return false;
+    }
+
+    return confirm('Are you sure you want to update this complaint status to ' + status.replace('_', ' ') + '?');
+});
 window.validateNewComplaintForm = validateNewComplaintForm
 window.validateUpdateComplaintForm = validateUpdateComplaintForm

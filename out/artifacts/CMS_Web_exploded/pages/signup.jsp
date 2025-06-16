@@ -76,13 +76,20 @@
                     <span id="usernameError" class="error-message"></span>
 
                     <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-lock-fill"></i>
-                        </span>
+    <span class="input-group-text">
+        <i class="bi bi-lock-fill"></i>
+    </span>
+
                         <input type="password" class="form-control" id="password" name="password"
-                               placeholder="Create a strong password" onblur="validateField('password')"
+                               placeholder="Create a strong password"
+                               onblur="validateField('password')"
                                oninput="showPasswordStrength()" required/>
+
+                        <span class="input-group-text" onclick="togglePasswordVisibility()" style="cursor: pointer;">
+        <i id="togglePasswordIcon" class="bi bi-eye-slash"></i>
+    </span>
                     </div>
+
                     <div id="passwordStrength" class="password-strength"></div>
                     <span id="passwordError" class="error-message"></span>
 
@@ -91,6 +98,7 @@
                         <i class="bi bi-person-plus me-2"></i>
                         Create Account
                     </button>
+
                 </form>
 
                 <div class="login-link">

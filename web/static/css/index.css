@@ -311,6 +311,11 @@ body {
     animation-delay: 8s;
 }
 
+.input-group-text:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
 @keyframes float {
     0%, 100% {
         transform: translateY(100vh) rotate(0deg);

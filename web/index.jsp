@@ -63,12 +63,16 @@
                     </div>
 
                     <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bi bi-lock-fill"></i>
-                            </span>
-                        <input type="password" class="form-control" name="password" placeholder="Enter your password"
-                               required/>
+                      <span class="input-group-text">
+                        <i class="bi bi-lock-fill"></i>
+                      </span>
+                        <input type="password" id="loginPassword" name="password" class="form-control"
+                               placeholder="Enter your password" required/>
+                        <span class="input-group-text" onclick="toggleLoginPassword()" style="cursor: pointer;">
+                            <i id="toggleLoginPasswordIcon" class="bi bi-eye-slash"></i>
+                        </span>
                     </div>
+
 
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
@@ -96,5 +100,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/static/js/index.js"></script>
 </body>
 </html>

@@ -161,6 +161,22 @@ function validateForm() {
     }
 }
 
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById("password");
+    const icon = document.getElementById("togglePasswordIcon");
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    } else {
+        passwordInput.type = "password";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
     const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]')
 

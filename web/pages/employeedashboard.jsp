@@ -11,6 +11,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/employeedashboard.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/complaint-validation.css">
 </head>
 <body>
 <!-- Top Navigation -->
@@ -261,7 +262,7 @@
     </div>
 </div>
 
-<!-- Update Complaint Modals - Reusing the same structure as New Complaint -->
+<!-- Update Complaint Modals -->
 <%
     if (complaints != null && !complaints.isEmpty()) {
         for (Complaint complaint : complaints) {
@@ -288,8 +289,9 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-tag"></i></span>
                             <input type="text" class="form-control" id="updateComplaintTitle<%= complaint.getId() %>"
-                                   name="title"
-                                   value="<%= complaint.getTitle() %>" required>
+                                   name="title" value="<%= complaint.getTitle() %>"
+                                   onblur="validateComplaintField('updateComplaintTitle<%= complaint.getId() %>', 'title')"
+                                   required>
                         </div>
                     </div>
 
@@ -300,7 +302,9 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-folder"></i></span>
                                 <select class="form-select" id="updateComplaintCategory<%= complaint.getId() %>"
-                                        name="category" required>
+                                        name="category"
+                                        onblur="validateComplaintField('updateComplaintCategory<%= complaint.getId() %>', 'category')"
+                                        required>
                                     <option value="">Select Category</option>
                                     <option value="Hardware" <%= "Hardware".equals(complaint.getCategory()) ? "selected" : "" %>>
                                         Hardware Issue
@@ -329,7 +333,9 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
                                 <select class="form-select" id="updateComplaintPriority<%= complaint.getId() %>"
-                                        name="priority" required>
+                                        name="priority"
+                                        onblur="validateComplaintField('updateComplaintPriority<%= complaint.getId() %>', 'priority')"
+                                        required>
                                     <option value="LOW" <%= "LOW".equals(complaint.getPriority()) ? "selected" : "" %>>
                                         Low
                                     </option>
@@ -351,6 +357,8 @@
                             <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
                             <textarea class="form-control" id="updateComplaintDescription<%= complaint.getId() %>"
                                       name="description" rows="4"
+                                      onblur="validateComplaintField('updateComplaintDescription<%= complaint.getId() %>', 'description')"
+                                      oninput="updateCharacterCount('updateComplaintDescription<%= complaint.getId() %>')"
                                       required><%= complaint.getDescription() != null ? complaint.getDescription() : "" %></textarea>
                         </div>
                     </div>
@@ -371,7 +379,8 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Cancel
                 </button>
-                <button type="submit" form="updateComplaintForm<%= complaint.getId() %>" class="btn btn-primary">
+                <button type="button" onclick="validateUpdateComplaintForm('<%= complaint.getId() %>')"
+                        class="btn btn-primary">
                     <i class="bi bi-check-circle"></i> Update Complaint
                 </button>
             </div>
@@ -402,7 +411,8 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-tag"></i></span>
                             <input type="text" class="form-control" id="complaintTitle" name="title"
-                                   placeholder="Brief title of your complaint" required>
+                                   placeholder="Brief title of your complaint"
+                                   onblur="validateComplaintField('complaintTitle', 'title')" required>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -410,7 +420,8 @@
                             <label for="complaintCategory" class="form-label">Category</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-folder"></i></span>
-                                <select class="form-select" id="complaintCategory" name="category" required>
+                                <select class="form-select" id="complaintCategory" name="category"
+                                        onblur="validateComplaintField('complaintCategory', 'category')" required>
                                     <option value="">Select Category</option>
                                     <option value="Hardware">Hardware Issue</option>
                                     <option value="Software">Software Issue</option>
@@ -425,7 +436,8 @@
                             <label for="complaintPriority" class="form-label">Priority</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
-                                <select class="form-select" id="complaintPriority" name="priority" required>
+                                <select class="form-select" id="complaintPriority" name="priority"
+                                        onblur="validateComplaintField('complaintPriority', 'priority')" required>
                                     <option value="LOW">Low</option>
                                     <option value="MEDIUM" selected>Medium</option>
                                     <option value="HIGH">High</option>
@@ -439,7 +451,8 @@
                             <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
                             <textarea class="form-control" id="complaintDescription" name="description" rows="4"
                                       placeholder="Please provide detailed information about your complaint"
-                                      required></textarea>
+                                      onblur="validateComplaintField('complaintDescription', 'description')"
+                                      oninput="updateCharacterCount('complaintDescription')" required></textarea>
                         </div>
                     </div>
                 </form>
@@ -448,7 +461,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Cancel
                 </button>
-                <button type="submit" form="complaintForm" class="btn btn-primary">
+                <button type="button" onclick="validateNewComplaintForm()" class="btn btn-primary">
                     <i class="bi bi-send"></i> Submit Complaint
                 </button>
             </div>
@@ -457,5 +470,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/static/js/complaint.js"></script>
 </body>
 </html>

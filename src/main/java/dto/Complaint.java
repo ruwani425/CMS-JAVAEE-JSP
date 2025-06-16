@@ -2,6 +2,7 @@ package dto;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @AllArgsConstructor
@@ -9,7 +10,7 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @ToString
-public class Complaint {
+public class Complaint implements Serializable {
     private int id;
     private String title;
     private String description;

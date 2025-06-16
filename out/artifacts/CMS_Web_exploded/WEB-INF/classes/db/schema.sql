@@ -38,3 +38,11 @@ INSERT INTO complaints (title, description, category, submitted_by)
 VALUES ('Street Light Not Working', 'The street light on Main Street has been out for 3 days', 'Infrastructure', 2),
        ('Pothole on Highway', 'Large pothole causing traffic issues on Highway 101', 'Roads', 3),
        ('Noise Complaint', 'Construction noise starting too early in residential area', 'Noise', 2);
+
+INSERT INTO complaints (title, description, category, status, priority, submitted_by, assigned_to, admin_remarks)
+VALUES
+    ('Water Leakage', 'There is a continuous water leakage near the park entrance.', 'Water', 'IN_PROGRESS', 'HIGH', 3, 1, 'Plumbing team has been notified.'),
+    ('Garbage Not Collected', 'Garbage has not been collected in my area for the past 4 days.', 'Sanitation', 'PENDING', 'MEDIUM', 2, NULL, NULL),
+    ('Street Flooding', 'Even small rain is causing flooding in my street.', 'Drainage', 'RESOLVED', 'HIGH', 3, 1, 'Issue resolved by cleaning blocked drains.'),
+    ('Stray Dogs', 'Large number of stray dogs seen in the neighborhood recently.', 'Animal Control', 'REJECTED', 'LOW', 2, 1, 'Outside jurisdiction. Contact animal welfare.'),
+    ('Illegal Parking', 'Cars are being parked illegally in front of my house.', 'Traffic', 'IN_PROGRESS', 'MEDIUM', 3, NULL, NULL);

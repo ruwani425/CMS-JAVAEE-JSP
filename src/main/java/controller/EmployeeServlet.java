@@ -27,6 +27,11 @@ public class EmployeeServlet extends HttpServlet {
         model = new ComplaintModel(dataSource);
 
         HttpSession session = req.getSession(false);
+
+        if (session == null || !"EMPLOYEE".equalsIgnoreCase((String) session.getAttribute("role"))) {
+            resp.sendRedirect(req.getContextPath() + "/index.jsp");
+            return;
+        }
         if (session == null) {
             resp.sendRedirect(req.getContextPath() + "/pages/login.jsp?msg=session_expired");
             return;

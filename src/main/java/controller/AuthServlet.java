@@ -71,6 +71,7 @@ public class AuthServlet extends HttpServlet {
                 HttpSession session = request.getSession();
                 session.setAttribute("employeeId", user.getId());
                 session.setAttribute("employeeName", user.getUsername());
+                session.setAttribute("role", user.getRole());
                 response.sendRedirect(request.getContextPath() + "/employee-dashboard");
             }
         } else {

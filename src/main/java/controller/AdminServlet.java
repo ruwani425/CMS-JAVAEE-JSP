@@ -25,7 +25,10 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         complaintModel = new ComplaintModel(dataSource);
-
+        if (session == null || !"ADMIN".equalsIgnoreCase((String) session.getAttribute("role"))) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            return;
+        }
         try {
             List<Complaint> complaints = complaintModel.getAllComplaints();
             request.setAttribute("complaints", complaints);
